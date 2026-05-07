@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { EditorNavbar } from "@/components/editor/editor-navbar";
+import { useCallback, useRef, useState } from "react";
+import type { SaveStatus } from "@/hooks/use-canvas-autosave";
 import { ProjectDialogs } from "@/components/editor/project-dialogs";
 import { ProjectShareDialog } from "@/components/editor/project-share-dialog";
 import { StarterTemplatesModal } from "./starter-template-modal";
@@ -34,7 +35,17 @@ export function EditorWorkspaceClient({
   const [pendingTemplate, setPendingTemplate] = useState<CanvasTemplate | null>(
     null,
   );
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const saveFnRef = useRef<() => void>(() => {});
   const actions = useProjectActions();
+
+  const handleSaveStatusChange = useCallback(
+    (status: SaveStatus) => setSaveStatus(status),
+    [],
+  );
+  const handleSaveReady = useCallback((fn: () => void) => {
+    saveFnRef.current = fn;
+  }, []);
 
   return (
     <div className="flex h-screen flex-col bg-bg-base">
@@ -46,6 +57,8 @@ export function EditorWorkspaceClient({
         onToggleAiSidebar={() => setAiSidebarOpen((prev) => !prev)}
         onOpenShareDialog={() => setShareDialogOpen(true)}
         onOpenTemplates={() => setTemplatesOpen(true)}
+        saveStatus={saveStatus}
+        onSave={() => saveFnRef.current()}
       />
 
       <main className="relative min-h-0 flex-1 overflow-hidden">
@@ -54,6 +67,8 @@ export function EditorWorkspaceClient({
           projectId={currentProject.id}
           pendingTemplate={pendingTemplate}
           onTemplateImported={() => setPendingTemplate(null)}
+          onSaveStatusChange={handleSaveStatusChange}
+          onSaveReady={handleSaveReady}
         />
       </main>
 
