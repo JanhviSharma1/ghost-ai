@@ -12,12 +12,14 @@ import type { CanvasTemplate } from "@/components/editor/starter-templates";
 
 interface CanvasRoomProps {
   roomId: string;
+  projectId: string;
   pendingTemplate?: CanvasTemplate | null;
   onTemplateImported?: () => void;
 }
 
 export function CanvasRoom({
   roomId,
+  projectId,
   pendingTemplate,
   onTemplateImported,
 }: CanvasRoomProps) {
@@ -26,7 +28,7 @@ export function CanvasRoom({
       <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
         <RoomProvider
           id={roomId}
-          initialPresence={{ cursor: null, isThinking: false }}
+          initialPresence={{ cursor: null, thinking: false }}
           initialStorage={
             new LiveObject({
               flow: new LiveObject({
@@ -39,6 +41,7 @@ export function CanvasRoom({
           <ClientSideSuspense fallback={<CanvasLoading />}>
             <ReactFlowProvider>
               <CanvasEditor
+                projectId={projectId}
                 pendingTemplate={pendingTemplate}
                 onTemplateImported={onTemplateImported}
               />
