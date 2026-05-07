@@ -1,30 +1,32 @@
 "use client";
 
+import Link from "next/link";
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import type { Project } from "@/hooks/use-project-dialogs";
+
+import type { ProjectRow } from "@/hooks/use-project-actions";
 
 interface ProjectSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  projects: Project[];
+  ownedProjects: ProjectRow[];
+  sharedProjects: ProjectRow[];
   onNewProject: () => void;
-  onRename: (project: Project) => void;
-  onDelete: (project: Project) => void;
+  onRename: (project: ProjectRow) => void;
+  onDelete: (project: ProjectRow) => void;
 }
 
 export function ProjectSidebar({
   isOpen,
   onClose,
-  projects,
+  ownedProjects,
+  sharedProjects,
   onNewProject,
   onRename,
   onDelete,
 }: ProjectSidebarProps) {
-  const ownedProjects = projects.filter((p) => p.owned);
-  const sharedProjects = projects.filter((p) => !p.owned);
-
   return (
     <>
       {isOpen && (
@@ -118,45 +120,53 @@ export function ProjectSidebar({
       </aside>
     </>
   );
+}
 
-  interface ProjectItemProps {
-    project: Project;
-    onRename?: (project: Project) => void;
-    onDelete?: (project: Project) => void;
-  }
-  function ProjectItem({ project, onRename, onDelete }: ProjectItemProps) {
-    return (
-      <div className="group flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/50 cursor-pointer">
-        <span className="flex-1 text-sm truncate text-text-primary">
-          {project.name}
-        </span>
-        {onRename && onDelete && (
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRename(project);
-              }}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              <span className="sr-only">Rename</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(project);
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span className="sr-only">Delete</span>
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
+interface ProjectItemProps {
+  project: ProjectRow;
+  onRename?: (project: ProjectRow) => void;
+  onDelete?: (project: ProjectRow) => void;
+}
+
+function ProjectItem({ project, onRename, onDelete }: ProjectItemProps) {
+  return (
+    <div className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50">
+      <Link
+        href={`/editor/${project.id}`}
+        className="min-w-0 flex-1 truncate text-sm text-text-primary"
+      >
+        {project.name}
+      </Link>
+
+      {onRename && onDelete && (
+        <div className="flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRename(project);
+            }}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            <span className="sr-only">Rename</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(project);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="sr-only">Delete</span>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }
